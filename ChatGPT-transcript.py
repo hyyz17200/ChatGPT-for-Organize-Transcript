@@ -41,12 +41,12 @@ class ChatGPT:
                         model="gpt-3.5-turbo",
                         messages=[{
                             'role': 'system',
-                            'content': 'You are a translator assistant.'
+                            'content': 'You are a text processor.'
                         }, {
                             "role":
                             "user",
                             "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. But do not translate people and authors' names and surnames. Return only the translation and nothing else:\n{text}",
+                            f"Organize the following text into an article faithful to the original text. You can only do punctuation modification and connecting words into paragraphs. Do not add, delete or modify any words or characters. Do not do any translation, keep it as Chinese. Return only the result and nothing else:\n{text}",
                         }],
                     )
                 else:
@@ -54,12 +54,12 @@ class ChatGPT:
                         model="gpt-3.5-turbo",
                         messages=[{
                             'role': 'system',
-                            'content': 'You are a translator assistant.'
+                            'content': 'You are a text processor.'
                         }, {
                             "role":
                             "user",
                             "content":
-                            f"Translate the following text into {self.target_language} in a way that is faithful to the original text. Return only the translation and nothing else:\n{text}",
+                            f"Organize the following text into an article faithful to the original text. You can only do punctuation modification and connecting words into paragraphs. Do not add, delete or modify any words or characters. Do not do any translation, keep it as Chinese. Return only the result and nothing else:\n{text}",
                         }],
                     )
                 t_text = (completion["choices"][0].get("message").get(
@@ -85,7 +85,12 @@ def translate_text_file(text_filepath_or_url, options):
     translator = ChatGPT(OPENAI_API_KEY, options.target_language,
                          options.not_to_translate_people_names)
 
-    paragraphs = read_and_preprocess_data(text_filepath_or_url)
+    #paragraphs = read_and_preprocess_data(text_filepath_or_url)
+    
+    with open(text_filepath_or_url, "r", encoding="utf-8") as f:
+        text = f.read()
+        paragraphs = [text[i:i+1536] for i in range(0, len(text), 1536)]
+
 
     # keep first three paragraphs
     first_three_paragraphs = paragraphs[:2]
@@ -201,7 +206,7 @@ def parse_arguments():
         "--num_threads",
         dest="num_threads",
         type=int,
-        default=10,
+        default=1,
         help="number of threads to use for translation",
     )
     parser.add_argument(
